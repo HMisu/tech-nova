@@ -73,16 +73,12 @@ public class DeliveryService {
                 new ArrayList<>()
         );
 
-        // 이동 경로 생성
         MovementRequestDto movementRequestDto = new MovementRequestDto(departureHubId, arrivalHubId);
-        System.out.println("userId: " + userId);
         MovementResponse movementResponse = hubMovementService.createMovement(movementRequestDto, userId, "MASTER").getData();
         List<HubMovementData> hubMovementDatas = createHubMovementDataList(movementResponse);
 
-        // 담당자 배정
-        // 생성 테스트 위해 임시로 첫번째 허브 배송 담당자 데이터 1명만 이용
-        // 추후 담당자 배정 로직 구현 후 수정 필요
-        DeliveryManager deliveryManager = deliveryManagerRepository.findFirstByRole(DeliveryManagerRole.HUB_DELIVERY_MANAGER).get();
+        DeliveryManager deliveryManager = deliveryRouteRecordRepository.findLeastAssignedDeliveryManager()
+                .orElseThrow(() -> new RuntimeException("적절한 배송 담당자를 찾을 수 없습니다."));
 
         validateRoleForHubAssignment(deliveryManager);
 
